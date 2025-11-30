@@ -1,0 +1,1 @@
+{"id":"msg_bdrk_01BEiSzerKhNXeKyvC6WykWm","type":"message","role":"assistant","model":"claude-3-5-sonnet-20241022","content":[{"type":"text","text":"Here's a haiku about clouds:\n\nFloating cotton wisps\nDance across the summer sky\nNature's gentle art"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":14,"output_tokens":28}}
