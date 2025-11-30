@@ -132,3 +132,189 @@ Logic: If Bedrock fails/times out, load the mock trial where the Biologist screa
 Task 4.2: Tune the Prompts
 
 Action: Test the "Skeptic" prompt. Make sure he isn't too mean (or make him meaner, depending on your vibe).
+
+
+
+This is a fantastic technical flex. Using Strands Agents (the new open-source SDK from AWS) fits the "Road to re:Invent" theme perfectly because it shows you are on the bleeding edge of AWS open-source tools.
+
+Here is the detailed implementation plan to build the "Court of Desperation" backend using Strands.
+
+🏗️ Architecture: The "Jury & Judge" Pattern
+
+We will use the Agents-as-Tools pattern supported by Strands.
+
+The Jury (Child Agents): Three distinct agents who analyze the user's plea/face. They are "Tools" available to the Judge.
+
+The Judge (Parent Agent): The "Pit Boss" who calls the Jury agents, weighs their verdicts, and issues the final ACCESS_GRANTED or ACCESS_DENIED.
+
+✅ Task List & Implementation Guide
+📦 Task 1: Environment Setup (10 Mins)
+
+You need to install the SDK and set up the AWS Bedrock client.
+
+Action: Add these to your requirements.txt or install immediately.
+
+code
+Bash
+download
+content_copy
+expand_less
+pip install strands-agents strands-agents-tools boto3
+
+File Setup: Create a file named courtroom.py.
+
+🛠️ Task 2: Build the "Vision Tool" (20 Mins)
+
+The Jury needs "eyes" to see the user's desperation. We wrap AWS Rekognition in a Strands @tool.
+
+Code Spec (courtroom.py):
+
+code
+Python
+download
+content_copy
+expand_less
+import boto3
+import json
+from strands import tool
+
+rekognition = boto3.client('rekognition')
+
+@tool
+def analyze_face_emotion(image_base64: str) -> str:
+    """
+    Analyzes a face image to detect emotions like Fear, Sadness, or Distress.
+    Returns a JSON string of the top 3 emotions and their confidence scores.
+    """
+    # (Add standard Boto3 Rekognition code here)
+    # Mock response for the bus ride if WiFi fails:
+    # return json.dumps({"emotions": [{"Type": "FEAR", "Confidence": 98.2}]})
+    pass
+👨‍⚖️ Task 3: Define the "Jury" Agents (30 Mins)
+
+Create three agents with distinct, hostile personalities. In Strands, you define an Agent and then use it as a tool for another agent.[1][2][3]
+
+Code Spec:
+
+code
+Python
+download
+content_copy
+expand_less
+from strands import Agent
+from strands.models import BedrockModel[[3](https://www.google.com/url?sa=E&q=https%3A%2F%2Fvertexaisearch.cloud.google.com%2Fgrounding-api-redirect%2FAUZIYQEgxz90uHMfr9rKOdI4Gt9CvGQlu8sV59sTxxrljb3gdWDTZxiJFEsETNqMipKVfzbfIQTYV1laSTGcmdIU0qyECWNbGQmQ8JjDTpk4GfN_7iJnTSCJYbhqvOFznJZ6kR46QLDSnw%3D%3D)]
+
+# Use Haiku for speed/cost
+model = BedrockModel(model_id="anthropic.claude-3-haiku-20240307-v1:0")
+
+# Juror 1: The Skeptic (Checks for fakes)
+juror_skeptic = Agent(
+    name="The_Skeptic",
+    model=model,
+    tools=[analyze_face_emotion], # Give him the vision tool
+    system_prompt="""
+    You are a cynical Vegas bouncer. Your job is to analyze the user's face.
+    If they look happy or calm, ACCUSE them of faking.
+    If they look genuinely terrified, begrudgingly admit it.
+    Output your verdict as: "VERDICT: [REAL/FAKE] - [Reasoning]"
+    """
+)
+
+# Juror 2: The Doctor (Checks for medical urgency)
+juror_doctor = Agent(
+    name="The_Doctor",
+    model=model,
+    system_prompt="""
+    You are an overly dramatic medical professional.
+    Analyze the user's plea text. Look for keywords like 'bursting', 'emergency', 'pain'.
+    Diagnose them with fake medical conditions (e.g., 'Acute Bladder Failure').
+    """
+)
+
+# Juror 3: The Gambler (Random chance)
+juror_gambler = Agent(
+    name="The_Gambler",
+    model=model,
+    system_prompt="""
+    You don't care about facts. You care about luck.
+    Flip a coin (randomly decide). If heads, let them in. If tails, tell them to get lost.
+    """
+)
+🎰 Task 4: Define the "Judge" Agent (The Pit Boss) (20 Mins)
+
+This is the main agent that the frontend interacts with. It orchestrates the Jury.
+
+Code Spec:
+
+code
+Python
+download
+content_copy
+expand_less
+# The Judge uses the Jury Agents as tools!
+pit_boss_judge = Agent(
+    name="Pit_Boss",
+    model=model,
+    # Strands allows Agents to be passed as tools directly
+    tools=[juror_skeptic, juror_doctor, juror_gambler], 
+    system_prompt="""
+    You are the Pit Boss of the Lucky Loo.
+    A user is begging to use the bathroom.
+    1. Call 'The_Skeptic' to check their face.
+    2. Call 'The_Doctor' to check their story.
+    3. Call 'The_Gambler' to check their luck.
+    
+    Weigh their opinions. 
+    - If the Skeptic says FAKE, deny immediately.
+    - If the Doctor says CRITICAL, lean towards yes.
+    - If the Gambler says NO, deny.
+    
+    Final Output must be JSON:
+    {
+        "access": "GRANTED" or "DENIED",
+        "message": "Your cruel rejection or acceptance message here.",
+        "door_code": "777" (only if granted)
+    }
+    """
+)
+🔌 Task 5: The API Handler (20 Mins)
+
+You need a way to trigger this from your React frontend.
+
+Action: Wrap the pit_boss_judge in a simple Lambda handler or FastAPI route.
+
+Code Spec:
+
+code
+Python
+download
+content_copy
+expand_less
+def handle_request(user_image, user_text):
+    # The prompt that starts the trial
+    response = pit_boss_judge(
+        f"User Plea: '{user_text}'. Attached Image: {user_image}"
+    )
+    return response
+🚀 Why this implementation wins:
+
+"Agents-as-Tools" Pattern: You are demonstrating a sophisticated multi-agent architecture (Hierarchical Delegation) where one agent orchestrates others.
+
+Open Source: You are using Strands, which is an AWS open-source project.[4] The judges will love that you aren't just using the standard Bedrock API.
+
+Observability: Strands has built-in logging. If you have time, enable it to show the "Thought Chain" of the agents arguing with each other in your console logs during the demo.
+
+Sources
+help
+medium.com
+amazon.com
+youtube.com
+dev.to
+strandsagents.com
+amazon.com
+expresscomputer.in
+Google Search Suggestions
+Display of Search Suggestions is required when using Grounding with Google Search. Learn more
+"Introducing Strands Agents" Open Source AI Agents SDK
+"Strands Agents" AI SDK
+"Strands" python library agents
