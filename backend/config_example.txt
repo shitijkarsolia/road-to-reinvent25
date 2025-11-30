@@ -1,0 +1,13 @@
+# AWS Configuration
+# Copy this to .env and fill in your credentials
+
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_access_key_here
+AWS_SECRET_ACCESS_KEY=your_secret_key_here
+
+# Server Configuration
+PORT=8000
+
+# Demo Mode (set to true for stage presentations)
+DEMO_MODE=false
+
