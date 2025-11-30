@@ -26,6 +26,7 @@ from strands.models import BedrockModel
 from mock_responses import get_mock_response
 
 # Check if we're in mock mode (no AWS credentials)
+# TEMPORARILY SET TO TRUE TO DEBUG TIMEOUT ISSUE
 MOCK_MODE = os.getenv("MOCK_MODE", "false").lower() == "true"
 
 # Load steering prompts from markdown files
