@@ -1,3 +1,45 @@
-*.pyc
+# Python
 __pycache__/
+*.py[cod]
 *.pyo
+venv/
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.next/
+
+# Environment
+.env
+.env.local
+
+# Build artifacts
+backend.zip
+*.zip
+output.json
+output.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Internal planning / brainstorm docs
+Task.md
+jury.md
+details.md
+terminate.md
+
+# Runtime artifacts
+sample_output.json
+__pycache__/
+*.pyc

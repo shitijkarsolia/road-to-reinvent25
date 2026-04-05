@@ -1,0 +1,17 @@
+curl -X POST http://YOUR_HOST:8000/api/judge/upload \
+    -F "plea=EMERGENCY SITUATION!" \
+    -F "image=@desperate_face.jpg"
+
+curl -X POST http://YOUR_HOST:8000/api/judge/upload \
+  -F "plea=PLEASE! I have been holding it for 4 hours! Look at my face!" \
+  -F "demo_mode=false" \
+  -F "image=@/path/to/image.jpg" \
+  | python3 -m json.tool
+
+# For better formatting
+IMAGE_BASE64=$(base64 -w 0 /path/to/image.jpg)
+
+curl -X POST http://YOUR_HOST:8000/api/judge \
+  -H "Content-Type: application/json" \
+  -d "{\"plea\": \"Look at my desperate face!\", \"image_base64\": \"$IMAGE_BASE64\"}" \
+  | python3 -m json.tool

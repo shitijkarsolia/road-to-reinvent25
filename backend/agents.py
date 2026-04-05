@@ -42,7 +42,7 @@ def load_steering_prompt(filename: str) -> str:
 
 
 # Initialize Bedrock model - Claude Sonnet 4.5 with vision
-MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "us.anthropic.claude-sonnet-4-5-20250929-v1:0")
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 
 print(f"🎰 Using model: {MODEL_ID}")
@@ -336,6 +336,8 @@ Remember: Your output MUST end with valid JSON in this format:
         print("⚖️ The Court is now in session...")
         response = pit_boss_judge(case_presentation)
         result_text = str(response)
+        print(f"📝 Agent response length: {len(result_text)} characters")
+        print(f"📝 Response preview: {result_text[:200]}...")
         
         # Try to parse JSON from the response
         try:
@@ -346,15 +348,40 @@ Remember: Your output MUST end with valid JSON in this format:
                 result = json.loads(json_str)
                 # Remove door_code if present
                 result.pop("door_code", None)
+                # Ensure all required fields exist
+                if "verdict" not in result:
+                    result["verdict"] = "DENIED"
+                if "reasoning" not in result:
+                    result["reasoning"] = "The Court delivered a verdict."
+                if "roast" not in result:
+                    result["roast"] = "The house always wins."
+                if "jury_votes" not in result:
+                    result["jury_votes"] = {"skeptic": "UNKNOWN", "doctor": "UNKNOWN", "gambler": "UNKNOWN"}
                 return result
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            print(f"⚠️ JSON parsing error: {e}")
+            print(f"⚠️ Response text (first 500 chars): {result_text[:500]}")
         
-        # Fallback if JSON parsing fails
+        # Fallback if JSON parsing fails - try to extract what we can
+        print(f"⚠️ Failed to parse JSON. Full response length: {len(result_text)}")
+        print(f"⚠️ Response preview: {result_text[:300]}")
+        
+        # Try to extract verdict from text even if JSON is malformed
+        verdict = "DENIED"
+        if "GRANTED" in result_text.upper():
+            verdict = "GRANTED"
+        elif "DENIED" in result_text.upper():
+            verdict = "DENIED"
+        
+        # Extract roast safely (truncate but ensure valid JSON)
+        roast_text = result_text[:150] if result_text else "The house always wins. Try again."
+        # Escape quotes for JSON
+        roast_text = roast_text.replace('"', '\\"').replace('\n', ' ')
+        
         return {
-            "verdict": "DENIED",
+            "verdict": verdict,
             "reasoning": "The Court experienced technical difficulties during deliberation.",
-            "roast": result_text[:200] if result_text else "The house always wins. Try again.",
+            "roast": roast_text,
             "jury_votes": {
                 "skeptic": "UNKNOWN",
                 "doctor": "UNKNOWN", 

@@ -12,7 +12,7 @@ const JURY = [
 function JuryCard({ member, vote, loading }) {
   const isYes = vote === member.yes
   const hasVoted = vote && !['UNKNOWN', 'ERROR'].includes(vote)
-  
+
   return (
     <div className={`jury-card p-5 text-center ${hasVoted ? (isYes ? 'voted-yes' : 'voted-no') : ''}`}>
       <div className="emoji-lg mb-2">{member.emoji}</div>
@@ -270,7 +270,7 @@ export default function App() {
           
           <button onClick={reset} className="btn btn-primary w-full">
             Try Again
-          </button>
+        </button>
         </div>
       )}
 
@@ -278,6 +278,6 @@ export default function App() {
       <footer className="text-center mt-12 text-zinc-400 text-xs">
         Powered by AWS Strands Agents & Claude
       </footer>
-    </div>
+      </div>
   )
 }
